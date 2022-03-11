@@ -5,12 +5,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -93,7 +97,18 @@ public class RobotContainer {
 
     private HashMap<Command, Pose2d> initialPoses;
 
-    private Command auto_1Ball, auto_2BallTop, auto_2BallMid, auto_2BallBot, auto_3BallTerminal, auto_3BallHook, auto_3BallHersheyKiss, auto_3BallBack, auto_4BallE, auto_4BallTerm, auto_5Ball, auto_3Ball180;
+    private Command auto_1Ball, 
+                    auto_2BallTop, 
+                    auto_2BallMid, 
+                    auto_2BallBot, 
+                    auto_3BallTerminal, 
+                    auto_3BallHook, 
+                    auto_3BallHersheyKiss, 
+                    auto_3BallHersheyKissPursuit, 
+                    auto_3BallBack, auto_4BallE, 
+                    auto_4BallTerm, 
+                    auto_5Ball, 
+                    auto_3Ball180;
 
     private boolean DEBUG = true;
     private boolean driveHalfSpeed = false;
@@ -428,6 +443,48 @@ public class RobotContainer {
                             //shoot two balls
                             retractHopperAndShootCmdLL(3500)
         );
+
+        auto_3BallHersheyKissPursuit = new SequentialCommandGroup(
+            
+                            //shoot preload
+                            retractHopperAndShootCmd(3500),
+                            
+                            //pick up two balls
+                            new ParallelDeadlineGroup(
+                                new SequentialCommandGroup(
+
+                                    // backs up
+                                    trajectoryCmd(5),
+
+                                    // go until it sees ball
+                                    trajectoryCmd(6).withInterrupt(() -> m_ballLimelight.hasValidTarget()),
+
+                                    // go forward and pick up ball       
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+
+                                    // go to next point
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(7.269754416625572,-7.954779479535048, new Rotation2d()), 
+                                        Trajectories.forwardTrajConfig
+                                    ).withInterrupt(() -> m_ballLimelight.hasValidTarget()
+                                    ),
+
+                                    // go forward and pick up ball  
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+
+                                    // go to final point
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(8.304405585628741,-6.693798367312433, new Rotation2d(1.3932993503905973)), 
+                                        Trajectories.forwardTrajConfig
+                                    ),
+                                    new InstantCommand(m_drive::stop, m_drive)
+                                ),
+                                new CmdExtendIntakeAndRun(m_intake, m_hopper)
+                            ),
+
+                            //shoot two balls
+                            retractHopperAndShootCmdLL(3500)
+        );
         
         auto_3BallTerminal = new SequentialCommandGroup(
 
@@ -578,8 +635,33 @@ public class RobotContainer {
 
                             new CmdInPlaceTurn(m_drive, 180),
 
+                            //pick up two balls
                             new ParallelDeadlineGroup(
-                                trajectoryCmd(25), 
+                                new SequentialCommandGroup(
+
+                                    // go until it sees ball
+                                    trajectoryCmd(25).withInterrupt(() -> m_ballLimelight.hasValidTarget()),
+
+                                    // go forward and pick up ball       
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+
+                                    // go to next point
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(5.456751358513932,-5.925940473065015, new Rotation2d(1.136754902786377)), 
+                                        Trajectories.forwardTrajConfig
+                                    ).withInterrupt(() -> m_ballLimelight.hasValidTarget()
+                                    ),
+
+                                    // go forward and pick up ball  
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+                                    
+                                    // go to final point
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(5.456751358513932,-5.925940473065015, new Rotation2d(1.136754902786377)), 
+                                        Trajectories.forwardTrajConfig
+                                    ),
+                                    new InstantCommand(m_drive::stop, m_drive)
+                                ),
                                 new CmdExtendIntakeAndRun(m_intake, m_hopper)
                             ),
 
@@ -616,6 +698,25 @@ public class RobotContainer {
                             new PIDController(Constants.DriveConstants.RAMSETE_KP, 0, 0),
                             m_drive::tankDriveVolts,
                             m_drive);
+    }
+
+    private RamseteCommand trajectoryFromHereToThere(Pose2d finalPose, TrajectoryConfig config){
+        return new RamseteCommand(TrajectoryGenerator.generateTrajectory(
+                List.of(
+                    m_drive.getPose(),
+                    finalPose),
+                config),
+                m_drive::getPose,
+                new RamseteController(Constants.DriveConstants.RAMSETE_B, Constants.DriveConstants.RAMSETE_ZETA),
+                new SimpleMotorFeedforward(Constants.DriveConstants.kS,
+                                            Constants.DriveConstants.kV,
+                                            Constants.DriveConstants.kA),
+                Constants.DriveConstants.DRIVE_KINEMATICS,
+                m_drive::getWheelSpeeds,
+                new PIDController(Constants.DriveConstants.RAMSETE_KP, 0, 0),
+                new PIDController(Constants.DriveConstants.RAMSETE_KP, 0, 0),
+                m_drive::tankDriveVolts,
+                m_drive);
     }
 
     private SequentialCommandGroup retractHopperAndShootCmd(int RPM) {

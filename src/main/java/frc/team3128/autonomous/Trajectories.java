@@ -17,17 +17,17 @@ import frc.team3128.Constants;
  * Store trajectories for autonomous. Edit points here. 
  */
 public class Trajectories {
-    private static final DifferentialDriveVoltageConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
+    public static final DifferentialDriveVoltageConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
             new SimpleMotorFeedforward(Constants.DriveConstants.kS, Constants.DriveConstants.kV, Constants.DriveConstants.kA),
             Constants.DriveConstants.DRIVE_KINEMATICS, Constants.DriveConstants.MAX_DRIVE_VOLTAGE);
 
-    private static final TrajectoryConfig forwardTrajConfig = new TrajectoryConfig(Constants.DriveConstants.MAX_DRIVE_VELOCITY,
+    public static final TrajectoryConfig forwardTrajConfig = new TrajectoryConfig(Constants.DriveConstants.MAX_DRIVE_VELOCITY,
             Constants.DriveConstants.MAX_DRIVE_ACCELERATION)
             .setKinematics(Constants.DriveConstants.DRIVE_KINEMATICS)
             .addConstraint(autoVoltageConstraint)
             .setReversed(false);
 
-    private static final TrajectoryConfig backwardsTrajConfig = new TrajectoryConfig(Constants.DriveConstants.MAX_DRIVE_VELOCITY,
+    public static final TrajectoryConfig backwardsTrajConfig = new TrajectoryConfig(Constants.DriveConstants.MAX_DRIVE_VELOCITY,
             Constants.DriveConstants.MAX_DRIVE_ACCELERATION)
             .setKinematics(Constants.DriveConstants.DRIVE_KINEMATICS)
             .addConstraint(autoVoltageConstraint)
