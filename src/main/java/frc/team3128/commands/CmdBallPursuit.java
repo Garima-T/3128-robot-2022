@@ -103,7 +103,7 @@ public class CmdBallPursuit extends CommandBase {
             
             case BLIND:
 
-                m_drivetrain.tankDrive(0.35, -0.35); // in-place turn
+                m_drivetrain.tankDrive(0.35, 0.35); // move forward
 
                 if (ballLimelight.hasValidTarget()) {
                     Log.info("CmdBallPursuit", "Target found - Switching to SEARCHING");

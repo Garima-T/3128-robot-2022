@@ -102,7 +102,8 @@ public class RobotContainer {
                     auto_2BallMid, 
                     auto_2BallBot, 
                     auto_3BallTerminal, 
-                    auto_3BallHook, 
+                    auto_3BallHook,
+                    auto_3BallHookPursuit_Test, 
                     auto_3BallHersheyKiss, 
                     auto_3BallHersheyKissPursuit, 
                     auto_3BallBack, auto_4BallE, 
@@ -423,6 +424,51 @@ public class RobotContainer {
                             //shoot two balls
                             retractHopperAndShootCmd(3250)
 
+        );
+
+        auto_3BallHookPursuit_Test = new SequentialCommandGroup(
+                            
+                            //shoot preload ball
+                            retractHopperAndShootCmd(3350),
+                            
+                            //pick up two balls
+                            new ParallelDeadlineGroup(
+                                new SequentialCommandGroup(
+                                    
+                                    //backs up
+                                    trajectoryCmd(3),
+
+                                    //goes until it sees a ball
+                                    trajectoryCmd(4).withInterrupt(() -> m_ballLimelight.hasValidTarget()),
+
+                                    //intake ball
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+
+                                    //go to next point; relativly where next ball is
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(5.213, 2.714, new Rotation2d()), 
+                                        Trajectories.forwardTrajConfig
+                                        ).withInterrupt(() -> m_ballLimelight.hasValidTarget()
+                                        ),
+                                    
+                                    //intake ball
+                                    new CmdBallIntake(m_drive, m_ballLimelight).withTimeout(2),
+
+                                    //go to final point
+                                    trajectoryFromHereToThere(
+                                        new Pose2d(7.593, 2.711, new Rotation2d(0.5007)),
+                                        Trajectories.forwardTrajConfig
+                                        ),
+
+                                    //stop driving
+                                    new InstantCommand(m_drive::stop, m_drive)
+
+                                ),
+                                new CmdExtendIntakeAndRun(m_intake, m_hopper)
+                            ),
+
+                            //shoot two balls
+                            retractHopperAndShootCmd(3250)
         );
 
         auto_3BallHersheyKiss = new SequentialCommandGroup(
@@ -801,6 +847,7 @@ public class RobotContainer {
         initialPoses.put(auto_2BallMid, trajectory[1].getInitialPose());
         initialPoses.put(auto_2BallTop, trajectory[2].getInitialPose());
         initialPoses.put(auto_3BallHook, trajectory[3].getInitialPose());
+        initialPoses.put(auto_3BallHookPursuit_Test, trajectory[3].getInitialPose());
         initialPoses.put(auto_3BallHersheyKiss, trajectory[5].getInitialPose());
         initialPoses.put(auto_3BallTerminal, trajectory[7].getInitialPose());
         initialPoses.put(auto_4BallE, trajectory[11].getInitialPose());
