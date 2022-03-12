@@ -567,6 +567,20 @@ public class RobotContainer {
         NarwhalDashboard.addAuto("4 Ball E", auto_4BallE);
         NarwhalDashboard.addAuto("4 Ball Terminal", auto_4BallTerm);
         NarwhalDashboard.addAuto("5 Ball", auto_5Ball);
+
+        // I don't understand why putting this in the constructor or initAutos doesn't work, so I put it here and it works (in sim)
+        initialPoses.put(auto_1Ball, Trajectories.driveBack30In.getInitialPose());
+        initialPoses.put(auto_2BallBot, trajectory[0].getInitialPose());
+        initialPoses.put(auto_2BallMid, trajectory[1].getInitialPose());
+        initialPoses.put(auto_2BallTop, trajectory[2].getInitialPose());
+        initialPoses.put(auto_3BallHook, trajectory[3].getInitialPose());
+        initialPoses.put(auto_3BallHersheyKiss, trajectory[5].getInitialPose());
+        initialPoses.put(auto_3BallTerminal, trajectory[7].getInitialPose());
+        initialPoses.put(auto_4BallE, trajectory[11].getInitialPose());
+        initialPoses.put(auto_4BallTerm, trajectory[13].getInitialPose());
+        initialPoses.put(auto_5Ball, trajectory[15].getInitialPose());
+        // initialPoses.put(auto_3BallBack, trajectory[23].getInitialPose());
+        // initialPoses.put(auto_3Ball180, new Pose2d(trajectory[25].getInitialPose().getX(), trajectory[25].getInitialPose().getY(), trajectory[25].getInitialPose().getRotation().unaryMinus()));
     }
 
     // Helper for initAutos so we don't clog it up with all of these params
@@ -661,17 +675,7 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         
-        // I don't understand why putting this in the constructor or initAutos doesn't work, so I put it here and it works (in sim)
-        initialPoses.put(auto_1Ball, Trajectories.driveBack30In.getInitialPose());
-        initialPoses.put(auto_2BallBot, trajectory[0].getInitialPose());
-        initialPoses.put(auto_2BallMid, trajectory[1].getInitialPose());
-        initialPoses.put(auto_2BallTop, trajectory[2].getInitialPose());
-        initialPoses.put(auto_3BallHook, trajectory[3].getInitialPose());
-        initialPoses.put(auto_3BallHersheyKiss, trajectory[5].getInitialPose());
-        initialPoses.put(auto_3BallTerminal, trajectory[7].getInitialPose());
-        initialPoses.put(auto_4BallE, trajectory[11].getInitialPose());
-        initialPoses.put(auto_4BallTerm, trajectory[13].getInitialPose());
-        initialPoses.put(auto_5Ball, trajectory[15].getInitialPose());
+     
 
         Command dashboardSelectedAuto = NarwhalDashboard.getSelectedAuto();
 
